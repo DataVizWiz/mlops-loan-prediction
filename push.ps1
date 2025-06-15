@@ -2,7 +2,7 @@ param (
     [string]$commMess
 )
 
-black .
+black src
 git add .
 git commit -m $commMess
 git push
