@@ -7,7 +7,7 @@ name = "mlp"
 version = "0.1.0"
 description = "MLOps Pipelines for Loan Predictions"
 authors = [
-    { name="DataVizWiz", email="" }
+    { name="DataVizWiz", email="No@email.com" }
 ]
 readme = "README.md"
 requires-python = ">=3.11"

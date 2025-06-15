@@ -1,7 +1,7 @@
 """Create database for Model tracking."""
 
 from os import environ
-from backend.utilities.sql import PgSql
+from mlp.backend.utilities.sql import PgSql
 
 if __name__ == "__main__":
     un = environ["DB_USER"]

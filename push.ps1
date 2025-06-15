@@ -3,7 +3,7 @@ param (
 )
 
 Remove-Item src/mlops_loan_default_predictions.egg-info -Recurse -Force
-pip freeze > requirements.txt
+pip freeze > requirements.dev.txt
 black .
 git add .
 git commit -m $commMess
