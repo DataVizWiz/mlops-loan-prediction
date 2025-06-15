@@ -9,6 +9,7 @@ build==1.2.2.post1
   packaging==25.0
   pyproject_hooks==1.2.0
   colorama==0.4.6
+mlp @ file:///C:/Users/metin/git/mlops-loan-prediction/dist/mlp-0.1.0-py3-none-any.whl#sha256=52c380dce054fa672d7f8bf7ac8edc88da509d249f4ddc392605e5479483935a
 pipdeptree==2.26.1
   packaging==25.0
   pip==24.3.1
