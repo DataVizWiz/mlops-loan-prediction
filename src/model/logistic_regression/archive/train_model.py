@@ -1,7 +1,7 @@
 import os
 import joblib
 import polars as pl
-import backend.control.config as cfg
+import model.logistic_regression.config as cfg
 
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import (

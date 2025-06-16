@@ -9,21 +9,91 @@ build==1.2.2.post1
   packaging==25.0
   pyproject_hooks==1.2.0
   colorama==0.4.6
-mlp @ file:///C:/Users/metin/git/mlops-loan-prediction/dist/mlp-0.1.0-py3-none-any.whl#sha256=52c380dce054fa672d7f8bf7ac8edc88da509d249f4ddc392605e5479483935a
+fastapi==0.115.12
+  starlette==0.46.2
+    anyio==4.9.0
+      idna==3.10
+      sniffio==1.3.1
+  pydantic==2.11.7
+    annotated-types==0.7.0
+    pydantic_core==2.33.2
+      typing_extensions==4.14.0
+    typing_extensions==4.14.0
+    typing-inspection==0.4.1
+      typing_extensions==4.14.0
+  typing_extensions==4.14.0
+imblearn==0.0
+  imbalanced-learn==0.13.0
+    numpy==2.3.0
+    scipy==1.15.3
+      numpy==2.3.0
+    scikit-learn==1.6.1
+      numpy==2.3.0
+      scipy==1.15.3
+        numpy==2.3.0
+      joblib==1.5.1
+      threadpoolctl==3.6.0
+    sklearn-compat==0.1.3
+      scikit-learn==1.6.1
+        numpy==2.3.0
+        scipy==1.15.3
+          numpy==2.3.0
+        joblib==1.5.1
+        threadpoolctl==3.6.0
+    joblib==1.5.1
+    threadpoolctl==3.6.0
+ipykernel==6.29.5
+  comm==0.2.2
+    traitlets==5.14.3
+  debugpy==1.8.14
+  ipython==9.3.0
+    colorama==0.4.6
+    decorator==5.2.1
+    ipython_pygments_lexers==1.1.1
+      Pygments==2.19.1
+    jedi==0.19.2
+      parso==0.8.4
+    matplotlib-inline==0.1.7
+      traitlets==5.14.3
+    prompt_toolkit==3.0.51
+      wcwidth==0.2.13
+    Pygments==2.19.1
+    stack-data==0.6.3
+      executing==2.2.0
+      asttokens==3.0.0
+      pure_eval==0.2.3
+    traitlets==5.14.3
+  jupyter_client==8.6.3
+    jupyter_core==5.8.1
+      platformdirs==4.3.8
+      pywin32==310
+      traitlets==5.14.3
+    python-dateutil==2.9.0.post0
+      six==1.17.0
+    pyzmq==27.0.0
+    tornado==6.5.1
+    traitlets==5.14.3
+  jupyter_core==5.8.1
+    platformdirs==4.3.8
+    pywin32==310
+    traitlets==5.14.3
+  matplotlib-inline==0.1.7
+    traitlets==5.14.3
+  nest-asyncio==1.6.0
+  packaging==25.0
+  psutil==7.0.0
+  pyzmq==27.0.0
+  tornado==6.5.1
+  traitlets==5.14.3
+mlp @ file:///C:/Users/metin/git/mlops-loan-prediction/dist/mlp-0.1.0-py3-none-any.whl#sha256=594880d6814b9d639852c97de447ee49a35ac584732d46f681f552a6e9e25cb9
 pipdeptree==2.26.1
   packaging==25.0
   pip==24.3.1
 polars==1.30.0
 psycopg2==2.9.10
-pure_eval==0.2.3
-Pygments==2.19.1
-scikit-learn==1.7.0
-  numpy==2.3.0
-  scipy==1.15.3
-    numpy==2.3.0
-  joblib==1.5.1
-  threadpoolctl==3.6.0
 setuptools==80.9.0
 tokenize_rt==6.2.0
-traitlets==5.14.3
-wcwidth==0.2.13
+uvicorn==0.34.3
+  click==8.2.1
+    colorama==0.4.6
+  h11==0.16.0

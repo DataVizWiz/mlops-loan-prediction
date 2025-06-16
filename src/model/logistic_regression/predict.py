@@ -1,6 +1,6 @@
 import joblib
 import polars as pl
-import backend.control.config as cfg
+import model.logistic_regression.config as cfg
 
 if __name__ == "__main__":
     model_path = f"{cfg.REGISTRY}/logistic_regression.pkl"

@@ -1,4 +1,4 @@
-NUM_FEATS = [
+SCALE_FEATURES = [
     "Age",
     "Income",
     "LoanAmount",
@@ -6,10 +6,12 @@ NUM_FEATS = [
     "MonthsEmployed",
     "NumCreditLines",
     "InterestRate",
-    "DTIRatio",
 ]
-CAT_FEATS = ["Education", "EmploymentType", "MaritalStatus", "LoanPurpose"]
-BIN_FEATS = ["HasMortgage", "HasDependents", "HasCoSigner"]
+
+NORMALIZE_FEATURES = ["DTIRatio"]
+ORDINAL_ENCODE_FEATURES = ["LoanTerm"]
+ONEHOT_ENCODE_FEATURES = ["Education", "EmploymentType", "MaritalStatus", "LoanPurpose"]
+BINARY_ENCODE_FEATURES = ["HasMortgage", "HasDependents", "HasCoSigner"]
 
 LOAN_ID_COL = "LoanID"
 TARGET_COL = "Default"
