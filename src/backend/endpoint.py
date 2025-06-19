@@ -61,10 +61,5 @@ def predict(payload: LoanInputs):
         "has_co_signer": data["HasCoSigner"],
     }
 
-    X_test_path = f"{cfg.TEST_DATA_DIR}/X_test.csv"
-    y_test_path = f"{cfg.TEST_DATA_DIR}/y_test.csv"
-
-    X_test = pl.read_csv(X_test_path).to_numpy()
-    y_test = pl.read_csv(y_test_path).to_numpy()
-
-    pred = lr_model.predict(X_test)
+    # preprocess data
+    # make prediction

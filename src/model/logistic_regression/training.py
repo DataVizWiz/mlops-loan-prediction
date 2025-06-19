@@ -1,23 +1,24 @@
-import pandas as pd
-import model.logistic_regression.config as cfg
+import joblib
+import numpy as np
 
-from model.logistic_regression.preprocessing import PreprocessLoans
-from model.logistic_regression.pipeline import pipeline
+from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
+from model.logistic_regression.config import RAW_PATH
+from model.logistic_regression.preprocessing import PreprocessLoans
+
 
 if __name__ == "__main__":
-    preprocessor = PreprocessLoans(cfg.RAW_PATH)
+    preprocessor = PreprocessLoans(RAW_PATH)
     preprocessor.transform()
-    print(preprocessor.df_X)
-    print(preprocessor.df_y)
 
-# X = df.drop(cfg.TARGET, axis=1)
-# y= df[cfg.TARGET]
+    X = preprocessor.df_X.to_numpy()
+    y = preprocessor.df_y.to_numpy().ravel()
 
-# X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=42, test_size=0.2)
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=42
+    )
+    np.savez("data/test/test_data.npz", X_test=X_test, y_test=y_test)
 
-# test_data = X_test.copy()
-# test_data[cfg.TARGET] = y_test
-# test_data.to_csv(cfg.TEST_DATA_PATH)
-
-# pipeline.fit(X_train, y_train)
+    model = LogisticRegression()
+    model.fit(X_train, y_train)
+    joblib.dump(model, "models/logistic_regression.pkl")

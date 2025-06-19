@@ -26,7 +26,6 @@ class PreprocessLoans:
             df.drop_in_place(col)
         self.df_X = df.drop(cfg.TARGET)
         self.df_y = df[cfg.TARGET].to_frame().cast(pl.Int8)
-        self.model = LogisticRegression()
 
     def apply_scaling(self):
         """Scale numeric features."""
