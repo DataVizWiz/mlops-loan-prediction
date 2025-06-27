@@ -4,7 +4,7 @@ import model.logistic_regression.config as cfg
 
 from fastapi import FastAPI
 from pydantic import BaseModel
-
+from model.logistic_regression.preprocessing import PreprocessLoans
 
 app = FastAPI()
 model_path = f"{cfg.REGISTRY}/logistic_regression.pkl"
@@ -39,7 +39,7 @@ async def read_root():
     return {"message": "Welcome to Loan Predictions"}
 
 
-@app.post("/predict", response_model=LoanPrediction)
+# @app.post("/predict", response_model=LoanPrediction)
 def predict(payload: LoanInputs):
     data = payload.model_dump()
     model_input = {
@@ -61,5 +61,4 @@ def predict(payload: LoanInputs):
         "has_co_signer": data["HasCoSigner"],
     }
 
-    # preprocess data
-    # make prediction
+
