@@ -1,7 +1,7 @@
 DROP_FEATURES = ["LoanID"]
 TARGET = "Default"
 
-SCALE_FEATURES = [
+NUMERIC_FEATURES = [
     "Age",
     "Income",
     "LoanAmount",
@@ -9,9 +9,9 @@ SCALE_FEATURES = [
     "MonthsEmployed",
     "NumCreditLines",
     "InterestRate",
+    "DTIRatio"
 ]
 
-NORMALIZE_FEATURES = ["DTIRatio"]
 ORDINAL_ENCODE_FEATURES = ["LoanTerm"]
 ONEHOT_ENCODE_FEATURES = ["Education", "EmploymentType", "MaritalStatus", "LoanPurpose"]
 BINARY_ENCODE_FEATURES = ["HasMortgage", "HasDependents", "HasCoSigner"]

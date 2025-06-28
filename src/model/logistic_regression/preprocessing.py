@@ -9,72 +9,98 @@ import joblib
 import polars as pl
 import model.logistic_regression.config as cfg
 
-from typing import Union
 from sklearn.preprocessing import (
     OneHotEncoder,
     OrdinalEncoder,
 )
-from model.transformers import NumericScaler, NumericNormalizer
+from model.transformers import Scaler
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
+
+from typing import List
+
+
+class OrdinalEncoder:
+    """Ordinal Encoder."""
+
+    def __init__(self, features: List[str]):
+        self.features = features
+        self.ordinal_encoder = OrdinalEncoder()
+
+    def _select_features(self, df_X: pl.DataFrame) -> pl.DataFrame:
+        """Covert df to numpy array."""
+        return df_X.select(self.features)
+
+    def _replace_features_with_encoded(
+        self, df: pl.DataFrame, encoded: np.ndarray
+    ) -> pl.DataFrame:
+        """Update df_X with scaled array values."""
+        df[self.features] = encoded
+        df[self.features] = df[self.features].cast(pl.Int8)
+        return df
+
+    def fit_transform(self, df_X: pl.DataFrame) -> pl.DataFrame:
+        """Fit scaler and transform df."""
+        df = self._select_features(df_X)
+        encoded_arr = self.ordinal_encoder.fit_transform(df)
+        return self._replace_features_with_encoded(df_X, encoded_arr)
+
+    def transform(self, df_X: pl.DataFrame) -> pl.DataFrame:
+        """Scale new df_X values."""
+        arr = self._select_features_as_array(df_X)
+        scaled_arr = self.normalizer.fit_transform(arr)
+        return self._replace_features_with_normalized(df_X, scaled_arr)
 
 
 class ModelTrainer:
     """Preprocess loans data for LR."""
 
-    def __init__(self, data_input: Union[str, dict]):
+    def __init__(self):
         """Initialize"""
-        self.data_input = data_input
         self.bundle = {}
         self.df_X = None
         self.df_y = None
-        self.df_X_new = None
-        self.scaler = None
-        self.normalizer = None
+
+        self.standard_scaler = None
+        self.mixmax_scaler = None
         self.ordinal_encoder = None
         self.onehot_encoder = None
 
-        if isinstance(data_input, str) and data_input.endswith(".csv"):
-            self.set_training_frames()
-        else:
-            self.df_X = pl.DataFrame([self.data_input])
+        self.payload = None
 
-        # with open("models/logistic_regression.pkl", "rb") as f:
-        #     self.bundle = joblib.load(f)
+    def _set_training_frames(self):
+        self.df_y = self.df_X["Default"].to_frame()
 
-    def set_training_frames(self):
-        df = pl.read_csv(self.data_input)
+        for col in ["LoanID", "Default"]:
+            self.df_X.drop_in_place(col)
 
-        for col in cfg.DROP_FEATURES:
-            df.drop_in_place(col)
+    def _train_standard_scaler(self):
+        """Fit and transform standard scaler."""
+        features = [col for col in cfg.NUMERIC_FEATURES if col != "DTIRatio"]
+        self.standard_scaler = Scaler(features, StandardScaler())
+        self.df_X = self.standard_scaler.fit_transform(self.df_X)
 
-        self.df_X = df.drop(cfg.TARGET)
-        self.df_y = df[cfg.TARGET].to_frame().cast(pl.Int8)
+    def _train_mixmax_scaler(self):
+        """Fit and transform mix max scaler."""
+        self.mixmax_scaler = Scaler(["DTIRatio"], MinMaxScaler(feature_range=(0, 1)))
+        self.df_X = self.mixmax_scaler.fit_transform(self.df_X)
 
-    def _train_scaler(self):
-        """Fit and transform numeric scaler."""
-        self.scaler = NumericScaler(cfg.SCALE_FEATURES)
-        self.df_X = self.scaler.fit_transform(self.df_X)
-
-    def _train_normalizer(self):
-        """Fit and transform numeric normalizer."""
-        self.normalizer = NumericNormalizer(cfg.NORMALIZE_FEATURES)
-        self.df_X = self.normalizer.fit_transform(self.df_X)
-
-    def fit_transform(self):
+    def fit_transform(self, df_X: pl.DataFrame):
         """Fit and transform training data."""
-        self._train_scaler()
-        self._train_normalizer()
+        self.df_X = df_X
+        self._set_training_frames()
+        self._train_standard_scaler()
+        self._train_mixmax_scaler()
 
-    def _apply_scaler(self):
-        self.df_X_new = self.scaler.transform(self.df_X_new)
+    def _apply_standard_scaler(self):
+        self.payload = self.standard_scaler.transform(self.payload)
 
-    def _apply_normalizer(self):
-        self.df_X_new = self.normalizer.transform(self.df_X_new)
+    def _apply_minmax_scaler(self):
+        self.payload = self.mixmax_scaler.transform(self.payload)
 
-    def transform(self, df_X: pl.DataFrame):
-        """Transform input payload."""
-        self.df_X_new = df_X
-        self._apply_scaler()
-        self._apply_normalizer()
+    def transform(self, payload: dict):
+        self.payload = payload
+        self._apply_standard_scaler()
+        self._apply_minmax_scaler()
 
     def fit_transform_ordinal_encoder(self):
         """Ordinal encode categorical features."""
@@ -107,12 +133,12 @@ class ModelTrainer:
 
 
 if __name__ == "__main__":
-    preprocessor = ModelTrainer(cfg.RAW_PATH)
-    preprocessor.fit_transform()
-    print(preprocessor.df_X.select("DTIRatio"))
+    path = "data/raw/loans.csv"
+    df = pl.read_csv(path)
 
-    # with open("models/logistic_regression.pkl", "wb") as f:
-    #     joblib.dump(preprocessor, f)
+    trainer = ModelTrainer()
+    trainer.fit_transform(df)
+    print(trainer.df_X)
 
     loan_data = {
         "Age": 56,
@@ -133,10 +159,6 @@ if __name__ == "__main__":
         "HasCoSigner": "Yes",
         "Default": 0,
     }
-    df_new = pl.DataFrame(loan_data)
 
-    # # to be handled in an orchestator function
-    # preprocessor = joblib.load("models/logistic_regression.pkl")
-    # print(preprocessor)
-    preprocessor.transform(df_new)
-    print(preprocessor.df_X_new.select("DTIRatio"))
+    trainer.transform(loan_data)
+    print(trainer.payload)
