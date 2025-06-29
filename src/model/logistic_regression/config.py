@@ -9,12 +9,19 @@ NUMERIC_FEATURES = [
     "MonthsEmployed",
     "NumCreditLines",
     "InterestRate",
-    "DTIRatio"
+    "DTIRatio",
 ]
 
-ORDINAL_ENCODE_FEATURES = ["LoanTerm"]
-ONEHOT_ENCODE_FEATURES = ["Education", "EmploymentType", "MaritalStatus", "LoanPurpose"]
-BINARY_ENCODE_FEATURES = ["HasMortgage", "HasDependents", "HasCoSigner"]
+CATEGORICAL_FEATURES = [
+    "LoanTerm",
+    "Education",
+    "EmploymentType",
+    "MaritalStatus",
+    "LoanPurpose",
+    "HasMortgage",
+    "HasDependents",
+    "HasCoSigner",
+]
 
 RAW_PATH = "data/raw/loans.csv"
 TEST_DATA_PATH = "data/test/X_test.csv"

@@ -9,46 +9,13 @@ import joblib
 import polars as pl
 import model.logistic_regression.config as cfg
 
+from model.transformers import Preprocessor
 from sklearn.preprocessing import (
-    OneHotEncoder,
+    StandardScaler,
+    MinMaxScaler,
     OrdinalEncoder,
+    OneHotEncoder,
 )
-from model.transformers import Scaler
-from sklearn.preprocessing import StandardScaler, MinMaxScaler
-
-from typing import List
-
-
-class OrdinalEncoder:
-    """Ordinal Encoder."""
-
-    def __init__(self, features: List[str]):
-        self.features = features
-        self.ordinal_encoder = OrdinalEncoder()
-
-    def _select_features(self, df_X: pl.DataFrame) -> pl.DataFrame:
-        """Covert df to numpy array."""
-        return df_X.select(self.features)
-
-    def _replace_features_with_encoded(
-        self, df: pl.DataFrame, encoded: np.ndarray
-    ) -> pl.DataFrame:
-        """Update df_X with scaled array values."""
-        df[self.features] = encoded
-        df[self.features] = df[self.features].cast(pl.Int8)
-        return df
-
-    def fit_transform(self, df_X: pl.DataFrame) -> pl.DataFrame:
-        """Fit scaler and transform df."""
-        df = self._select_features(df_X)
-        encoded_arr = self.ordinal_encoder.fit_transform(df)
-        return self._replace_features_with_encoded(df_X, encoded_arr)
-
-    def transform(self, df_X: pl.DataFrame) -> pl.DataFrame:
-        """Scale new df_X values."""
-        arr = self._select_features_as_array(df_X)
-        scaled_arr = self.normalizer.fit_transform(arr)
-        return self._replace_features_with_normalized(df_X, scaled_arr)
 
 
 class ModelTrainer:
@@ -76,13 +43,20 @@ class ModelTrainer:
     def _train_standard_scaler(self):
         """Fit and transform standard scaler."""
         features = [col for col in cfg.NUMERIC_FEATURES if col != "DTIRatio"]
-        self.standard_scaler = Scaler(features, StandardScaler())
+        self.standard_scaler = Preprocessor(features, StandardScaler())
         self.df_X = self.standard_scaler.fit_transform(self.df_X)
 
     def _train_mixmax_scaler(self):
         """Fit and transform mix max scaler."""
-        self.mixmax_scaler = Scaler(["DTIRatio"], MinMaxScaler(feature_range=(0, 1)))
+        self.mixmax_scaler = Preprocessor(
+            ["DTIRatio"], MinMaxScaler(feature_range=(0, 1))
+        )
         self.df_X = self.mixmax_scaler.fit_transform(self.df_X)
+
+    def _train_ordinal_encoder(self):
+        """Fit and transform ordinal encoder."""
+        self.ordinal_encoder = Preprocessor(["LoanTerm"], OrdinalEncoder())
+        self.df_X = self.ordinal_encoder.fit_transform(self.df_X)
 
     def fit_transform(self, df_X: pl.DataFrame):
         """Fit and transform training data."""
@@ -90,6 +64,7 @@ class ModelTrainer:
         self._set_training_frames()
         self._train_standard_scaler()
         self._train_mixmax_scaler()
+        self._train_ordinal_encoder()
 
     def _apply_standard_scaler(self):
         self.payload = self.standard_scaler.transform(self.payload)
@@ -101,15 +76,6 @@ class ModelTrainer:
         self.payload = payload
         self._apply_standard_scaler()
         self._apply_minmax_scaler()
-
-    def fit_transform_ordinal_encoder(self):
-        """Ordinal encode categorical features."""
-        feats = cfg.ORDINAL_ENCODE_FEATURES
-        df = self.df_X.select(feats)
-        self.ordinal_encoder = OrdinalEncoder()
-        arr_encoded = self.ordinal_encoder.fit_transform(df)
-        self.df_X[feats] = arr_encoded
-        self.df_X[feats] = self.df_X[feats].cast(pl.Int8)
 
     def fit_transform_onehot_encoder(self):
         """One-hot encode categorical features."""
@@ -138,27 +104,27 @@ if __name__ == "__main__":
 
     trainer = ModelTrainer()
     trainer.fit_transform(df)
-    print(trainer.df_X)
+    print(trainer.df_X.select("LoanTerm"))
 
-    loan_data = {
-        "Age": 56,
-        "Income": 85994,
-        "LoanAmount": 50587,
-        "CreditScore": 520,
-        "MonthsEmployed": 80,
-        "NumCreditLines": 4,
-        "InterestRate": 15.23,
-        "LoanTerm": 36,
-        "DTIRatio": 0.98773,
-        "Education": "Bachelor's",
-        "EmploymentType": "Full-time",
-        "MaritalStatus": "Divorced",
-        "HasMortgage": "Yes",
-        "HasDependents": "Yes",
-        "LoanPurpose": "Other",
-        "HasCoSigner": "Yes",
-        "Default": 0,
-    }
+    # loan_data = {
+    #     "Age": 56,
+    #     "Income": 85994,
+    #     "LoanAmount": 50587,
+    #     "CreditScore": 520,
+    #     "MonthsEmployed": 80,
+    #     "NumCreditLines": 4,
+    #     "InterestRate": 15.23,
+    #     "LoanTerm": 36,
+    #     "DTIRatio": 0.98773,
+    #     "Education": "Bachelor's",
+    #     "EmploymentType": "Full-time",
+    #     "MaritalStatus": "Divorced",
+    #     "HasMortgage": "Yes",
+    #     "HasDependents": "Yes",
+    #     "LoanPurpose": "Other",
+    #     "HasCoSigner": "Yes",
+    #     "Default": 0,
+    # }
 
-    trainer.transform(loan_data)
-    print(trainer.payload)
+    # trainer.transform(loan_data)
+    # print(trainer.payload)
