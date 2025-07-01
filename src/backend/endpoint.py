@@ -60,5 +60,3 @@ def predict(payload: LoanInputs):
         "loan_purpose": data["LoanPurpose"],
         "has_co_signer": data["HasCoSigner"],
     }
-
-
