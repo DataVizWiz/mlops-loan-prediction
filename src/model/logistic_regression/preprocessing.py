@@ -13,39 +13,62 @@ from model.transformers import Scaler, Encoder
 from sklearn.preprocessing import (
     StandardScaler,
     MinMaxScaler,
-    OrdinalEncoder,
     OneHotEncoder,
 )
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
 
 
 class ModelTrainer:
     def __init__(self):
         """Model trainer."""
         self.bundle = {}
+        self.df = None
         self.df_X = None
         self.df_y = None
+
+        self.X_train = None
+        self.y_train = None
 
         self.standard_scaler = None
         self.minmax_scaler = None
         self.onehot_encoder = None
+        self.model = LogisticRegression()
+        self.pkl = "models/logistic_regression.pkl"
 
-    def fit_transform(self, df_X: pl.DataFrame):
+    def fit_transform(self, df: pl.DataFrame):
         """Fit and transform training data."""
-        self.df_X = df_X
+        self.df = df
         self._set_X_and_y_frames()
         self._train_standard_scaler()
         self._train_minmax_scaler()
         self._train_onehot_encoder()
-        self.save_model()
+        self._apply_binary_encoder()
+        self._train_test_split()
+        self._train_model()
+        self._save_model()
 
-    def save_model(self):
+    def _save_model(self):
         """Save model to pkl file."""
-        with open("models/logistic_regression.pkl", "wb") as f:
+        with open(self.pkl, "wb") as f:
             joblib.dump(self.bundle, f)
+
+    def _train_test_split(self):
+        """Train and test split."""
+        X = self.df_X.to_numpy()
+        y = self.df_y.to_numpy().ravel()
+
+        self.X_train, X_test, self.y_train, y_test = train_test_split(
+            X, y, test_size=0.2, random_state=42
+        )
+        path = "data/test/test_data.npz"
+        np.savez(path, X_test=X_test, y_test=y_test)
+        print(f"Test data saved to {path}.")
 
     def _set_X_and_y_frames(self):
         """Set X and y dfs."""
-        self.df_y = self.df_X["Default"].to_frame()
+        self.df_y = self.df["Default"].to_frame()
+        self.df_X = self.df
 
         for col in ["LoanID", "Default"]:
             self.df_X.drop_in_place(col)
@@ -69,8 +92,22 @@ class ModelTrainer:
         encoder = OneHotEncoder(sparse_output=False, dtype=int)
         encoder.set_output(transform="polars")
         self.onehot_encoder = Encoder(features, encoder)
-        self.onehot_encoder.fit_transform(self.df_X)
+        self.df_X = self.onehot_encoder.fit_transform(self.df_X)
         self.bundle["onehot_encoder"] = self.onehot_encoder
+
+    def _apply_binary_encoder(self):
+        """Encode binary features as integers"""
+        bin_map = {"Yes": 1, "No": 0}
+
+        for feature in cfg.CATEGORICAL_FEATURES[-3:]:
+            self.df_X = self.df_X.with_columns(
+                pl.col(feature).replace(bin_map).alias(feature)
+            )
+
+    def _train_model(self):
+        """Train LR model."""
+        self.model.fit(self.X_train, self.y_train)
+        self.bundle["model"] = self.model
 
 
 class ModelPredictor:
@@ -94,15 +131,6 @@ class ModelPredictor:
     def _apply_transformer(self, transformer: object):
         """Apply transformer on new data."""
         self.df = transformer.transform(self.df)
-
-    def _apply_binary_encoder(self):
-        """Encode binary features as integers"""
-        bin_map = {"Yes": 1, "No": 0}
-
-        for feature in cfg.CATEGORICAL_FEATURES[-3:]:
-            self.df = self.df.with_columns(
-                pl.col(feature).replace(bin_map).alias(feature)
-            )
 
 
 if __name__ == "__main__":
