@@ -1,7 +1,7 @@
 """
 if __name__ == "__main__":
-    Scaler = PreprocessLoans(cfg.RAW_PATH)
-    Scaler.transform()
+    trainer = ModelTrainer()
+    trainer.fit_transform(df)
 """
 
 import numpy as np
@@ -132,34 +132,11 @@ class ModelPredictor:
         """Apply transformer on new data."""
         self.df = transformer.transform(self.df)
 
+    def _apply_binary_encoder(self):
+        """Encode binary features as integers"""
+        bin_map = {"Yes": 1, "No": 0}
 
-if __name__ == "__main__":
-    path = "data/raw/loans.csv"
-    df = pl.read_csv(path)
-
-    trainer = ModelTrainer()
-    trainer.fit_transform(df)
-
-    loan_data = {
-        "Age": 56,
-        "Income": 85994,
-        "LoanAmount": 50587,
-        "CreditScore": 520,
-        "MonthsEmployed": 80,
-        "NumCreditLines": 4,
-        "InterestRate": 15.23,
-        "LoanTerm": 36,
-        "DTIRatio": 0.98773,
-        "Education": "Bachelor's",
-        "EmploymentType": "Full-time",
-        "MaritalStatus": "Divorced",
-        "HasMortgage": "Yes",
-        "HasDependents": "Yes",
-        "LoanPurpose": "Other",
-        "HasCoSigner": "Yes",
-        "Default": 0,
-    }
-
-    predictor = ModelPredictor()
-    predictor.transform(loan_data)
-    print(predictor.df)
+        for feature in cfg.CATEGORICAL_FEATURES[-3:]:
+            self.df = self.df.with_columns(
+                pl.col(feature).replace(bin_map).alias(feature)
+            )
